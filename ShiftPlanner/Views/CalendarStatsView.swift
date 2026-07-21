@@ -41,13 +41,13 @@ struct CalendarStatsView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 Image(systemName: "flame.fill")
-                                    .foregroundColor(dataManager.burnoutRisk > 0.7 ? .red : .orange)
+                                    .foregroundColor(burnoutColor())
                                 Text("Риск выгорания")
                                     .font(.headline)
                                 Spacer()
                                 Text("\(String(format: "%.0f", dataManager.burnoutRisk * 100))%")
                                     .font(.subheadline.bold())
-                                    .foregroundColor(dataManager.burnoutRisk > 0.7 ? .red : (dataManager.burnoutRisk > 0.4 ? .yellow : .green))
+                                    .foregroundColor(burnoutColor())
                             }
 
                             GeometryReader { geometry in
@@ -67,7 +67,7 @@ struct CalendarStatsView: View {
                                         )
                                         .frame(width: geometry.size.width * CGFloat(dataManager.burnoutRisk), height: 10)
                                         .cornerRadius(5)
-                                        .modifier(NeonGlowModifier(color: dataManager.burnoutRisk > 0.7 ? .red : (dataManager.burnoutRisk > 0.4 ? .yellow : .green), radius: 3))
+                                        .modifier(NeonGlowModifier(color: burnoutColor(), radius: 3))
                                 }
                             }
                             .frame(height: 10)
@@ -145,6 +145,17 @@ struct CalendarStatsView: View {
             .sheet(isPresented: $showingGenerator) {
                 ScheduleGeneratorView()
             }
+        }
+    }
+
+    private func burnoutColor() -> Color {
+        let risk = dataManager.burnoutRisk
+        if risk > 0.7 {
+            return .red
+        } else if risk > 0.4 {
+            return .yellow
+        } else {
+            return .green
         }
     }
 }
