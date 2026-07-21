@@ -21,7 +21,7 @@ struct FinanceView: View {
                                     .foregroundColor(dataManager.remainingBalance >= 0 ? .primary : .red)
                             }
 
-                            ProgressView(value: min(max(dataManager.totalAllocated / max(dataManager.totalExpectedIncome, 1), 0), 1))
+                            ProgressView(value: min(max(dataManager.totalAllocated / max(dataManager.totalIncome, 1), 0), 1))
                                 .tint(dataManager.remainingBalance >= 0 ? .green : .red)
                         }
                         .liquidGlass()
