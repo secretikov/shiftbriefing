@@ -3,6 +3,7 @@ import SwiftUI
 struct CalendarStatsView: View {
     @EnvironmentObject var dataManager: DataManager
     @State private var selectedDate = Date()
+    @State private var showingGenerator = false
 
     var body: some View {
         NavigationView {
@@ -35,6 +36,25 @@ struct CalendarStatsView: View {
                             StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) ₽", icon: "sum", color: .orange)
                         }
                         .padding(.horizontal)
+
+                        // Прогноз дохода
+                        if dataManager.projectedIncomeForPlannedShifts > 0 {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Image(systemName: "sparkles")
+                                        .foregroundColor(.yellow)
+                                    Text("Прогнозируемый доход (от запланированных)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                Text("+\(String(format: "%.0f", dataManager.projectedIncomeForPlannedShifts)) ₽")
+                                    .font(.title2.bold())
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .liquidGlass()
+                            .padding(.horizontal)
+                        }
 
                         // Календарь
                         VStack {
@@ -77,6 +97,15 @@ struct CalendarStatsView: View {
                 }
             }
             .navigationTitle("Статистика")
+            .toolbar {
+                Button(action: { showingGenerator = true }) {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.title2)
+                }
+            }
+            .sheet(isPresented: $showingGenerator) {
+                ScheduleGeneratorView()
+            }
         }
     }
 }

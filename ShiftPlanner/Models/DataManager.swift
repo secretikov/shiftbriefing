@@ -9,7 +9,7 @@ class DataManager: ObservableObject {
     @Published var monthlyGoal: Double = 100_000.0 // Цель заработка на месяц
 
     var totalIncome: Double {
-        shifts.reduce(0) { $0 + $1.finalIncome }
+        shifts.filter { !$0.isArchived }.reduce(0) { $0 + $1.finalIncome }
     }
 
     var totalAllocated: Double {
@@ -22,11 +22,11 @@ class DataManager: ObservableObject {
 
     // Статистика
     var completedShiftsCount: Int {
-        shifts.filter { $0.isCompleted }.count
+        shifts.filter { $0.isCompleted && !$0.isArchived }.count
     }
 
     var averageIncomePerShift: Double {
-        let completed = shifts.filter { $0.isCompleted }
+        let completed = shifts.filter { $0.isCompleted && !$0.isArchived }
         guard !completed.isEmpty else { return 0 }
         let total = completed.reduce(0) { $0 + $1.actualIncome }
         return total / Double(completed.count)
@@ -41,7 +41,7 @@ class DataManager: ObservableObject {
         let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
         let endOfWeek = calendar.date(byAdding: .day, value: 7, to: startOfWeek)!
 
-        return shifts.filter { $0.date >= startOfWeek && $0.date < endOfWeek }.reduce(0) { $0 + $1.finalIncome }
+        return shifts.filter { $0.date >= startOfWeek && $0.date < endOfWeek && !$0.isArchived }.reduce(0) { $0 + $1.finalIncome }
     }
 
     // Статистика за текущий месяц
@@ -53,29 +53,58 @@ class DataManager: ObservableObject {
         let startOfMonth = calendar.date(from: components)!
         let startOfNextMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
 
-        return shifts.filter { $0.date >= startOfMonth && $0.date < startOfNextMonth }.reduce(0) { $0 + $1.finalIncome }
+        return shifts.filter { $0.date >= startOfMonth && $0.date < startOfNextMonth && !$0.isArchived }.reduce(0) { $0 + $1.finalIncome }
     }
 
     init() {
         loadData()
+    }
 
-        if shifts.isEmpty && financialItems.isEmpty {
-            // Тестовые данные, если сохранений нет
-            let pastDate = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
-            shifts = [
-                Shift(date: pastDate, isFixedIncome: false, durationHours: 8, hourlyRate: 1500, isCompleted: true, actualIncome: 12500),
-                Shift(date: Date().addingTimeInterval(86400 * 1), shiftType: .night, isFixedIncome: true, fixedAmount: 5000, durationHours: 0, hourlyRate: 0),
-                Shift(date: Date().addingTimeInterval(86400 * 3), durationHours: 12, hourlyRate: 1500)
-            ]
+    // Логика прогнозирования
+    var projectedIncomeForPlannedShifts: Double {
+        shifts.filter { !$0.isCompleted && !$0.isArchived }.reduce(0) { $0 + $1.expectedIncome }
+    }
 
-            financialItems = [
-                FinancialItem(name: "Квартплата", amount: 15000, category: .expense, priority: 1),
-                FinancialItem(name: "Долг", amount: 5000, category: .debt, priority: 1),
-                FinancialItem(name: "ETF", amount: 4000, category: .investment, priority: 2),
-                FinancialItem(name: "Новый iPhone", amount: 20000, category: .savings, priority: 3)
-            ]
-            saveData()
+    var shiftsNeededForGoals: Int {
+        let remainingGoalsAmount = max(0, totalAllocated - totalIncome)
+        let avgIncome = averageIncomePerShift > 0 ? averageIncomePerShift : (defaultHourlyRate * 8) // если нет завершенных смен, берем 8 часов по дефолту
+        return Int(ceil(remainingGoalsAmount / avgIncome))
+    }
+
+    // Генератор графика
+    func generateSchedule(startDate: Date, endDate: Date, workDays: Int, restDays: Int, shiftType: ShiftType, duration: Double, fixedAmount: Double, isFixed: Bool) {
+        var currentDate = startDate
+        var cycleCounter = 0
+        let calendar = Calendar.current
+
+        while currentDate <= endDate {
+            if cycleCounter < workDays {
+                // Добавляем рабочий день
+                let newShift = Shift(
+                    date: currentDate,
+                    shiftType: shiftType,
+                    isFixedIncome: isFixed,
+                    fixedAmount: fixedAmount,
+                    durationHours: duration,
+                    hourlyRate: defaultHourlyRate,
+                    isCompleted: false,
+                    actualIncome: 0,
+                    isArchived: false
+                )
+                shifts.append(newShift)
+            }
+
+            cycleCounter += 1
+            if cycleCounter >= (workDays + restDays) {
+                cycleCounter = 0
+            }
+
+            // Переходим к следующему дню
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
         }
+
+        shifts.sort { $0.date < $1.date }
+        saveData()
     }
 
     // Сохранение и загрузка
@@ -105,6 +134,26 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    func updateShift(shift: Shift) {
+        if let index = shifts.firstIndex(where: { $0.id == shift.id }) {
+            shifts[index] = shift
+            shifts.sort { $0.date < $1.date }
+            saveData()
+        }
+    }
+
+    func deleteShift(id: UUID) {
+        shifts.removeAll { $0.id == id }
+        saveData()
+    }
+
+    func archiveShift(id: UUID) {
+        if let index = shifts.firstIndex(where: { $0.id == id }) {
+            shifts[index].isArchived = true
+            saveData()
+        }
+    }
+
     func markShiftCompleted(id: UUID, actualIncome: Double) {
         if let index = shifts.firstIndex(where: { $0.id == id }) {
             shifts[index].isCompleted = true
@@ -113,10 +162,25 @@ class DataManager: ObservableObject {
         }
     }
 
+    // CRUD FinancialItems
+
     func addFinancialItem(name: String, amount: Double, category: FinancialCategory, priority: Int) {
         let newItem = FinancialItem(name: name, amount: amount, category: category, priority: priority)
         financialItems.append(newItem)
         financialItems.sort { $0.priority < $1.priority }
+        saveData()
+    }
+
+    func updateFinancialItem(item: FinancialItem) {
+        if let index = financialItems.firstIndex(where: { $0.id == item.id }) {
+            financialItems[index] = item
+            financialItems.sort { $0.priority < $1.priority }
+            saveData()
+        }
+    }
+
+    func deleteFinancialItem(id: UUID) {
+        financialItems.removeAll { $0.id == id }
         saveData()
     }
 }

@@ -3,8 +3,9 @@ import SwiftUI
 struct ShiftsView: View {
     @EnvironmentObject var dataManager: DataManager
     @State private var showingAddShift = false
+    @State private var editingShiftId: UUID? = nil
 
-    // States for New Shift Form
+    // States for New/Edit Shift Form
     @State private var newShiftDate = Date()
     @State private var newShiftType: ShiftType = .standard
     @State private var isFixedIncome = false
@@ -37,7 +38,7 @@ struct ShiftsView: View {
                         .padding(.horizontal)
 
                         // List of shifts
-                        ForEach(dataManager.shifts) { shift in
+                        ForEach(dataManager.shifts.filter { !$0.isArchived }) { shift in
                             HStack {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(shift.date, style: .date)
@@ -86,6 +87,29 @@ struct ShiftsView: View {
                             }
                             .liquidGlass()
                             .padding(.horizontal)
+                            .contextMenu {
+                                Button(action: {
+                                    editingShiftId = shift.id
+                                    newShiftDate = shift.date
+                                    newShiftType = shift.shiftType
+                                    isFixedIncome = shift.isFixedIncome
+                                    fixedAmount = String(format: "%.0f", shift.fixedAmount)
+                                    newShiftDuration = shift.durationHours
+                                    showingAddShift = true
+                                }) {
+                                    Label("Редактировать", systemImage: "pencil")
+                                }
+                                Button(action: {
+                                    dataManager.archiveShift(id: shift.id)
+                                }) {
+                                    Label("В архив", systemImage: "archivebox")
+                                }
+                                Button(role: .destructive, action: {
+                                    dataManager.deleteShift(id: shift.id)
+                                }) {
+                                    Label("Удалить", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                     .padding(.vertical)
@@ -93,7 +117,15 @@ struct ShiftsView: View {
             }
             .navigationTitle("Смены")
             .toolbar {
-                Button(action: { showingAddShift = true }) {
+                Button(action: {
+                    editingShiftId = nil
+                    newShiftDate = Date()
+                    newShiftType = .standard
+                    isFixedIncome = false
+                    fixedAmount = ""
+                    newShiftDuration = 8.0
+                    showingAddShift = true
+                }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.title2)
                 }
@@ -118,24 +150,37 @@ struct ShiftsView: View {
                             Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1...24, step: 0.5)
                         }
                     }
-                    .navigationTitle("Новая смена")
+                    .navigationTitle(editingShiftId == nil ? "Новая смена" : "Редактировать смену")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Отмена") { showingAddShift = false }
                         }
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Сохранить") {
-                                let shift = Shift(
-                                    date: newShiftDate,
-                                    shiftType: newShiftType,
-                                    isFixedIncome: isFixedIncome,
-                                    fixedAmount: Double(fixedAmount) ?? 0,
-                                    durationHours: newShiftDuration,
-                                    hourlyRate: dataManager.defaultHourlyRate,
-                                    isCompleted: false,
-                                    actualIncome: 0
-                                )
-                                dataManager.addShift(shift: shift)
+                                if let id = editingShiftId {
+                                    if let index = dataManager.shifts.firstIndex(where: { $0.id == id }) {
+                                        var updated = dataManager.shifts[index]
+                                        updated.date = newShiftDate
+                                        updated.shiftType = newShiftType
+                                        updated.isFixedIncome = isFixedIncome
+                                        updated.fixedAmount = Double(fixedAmount) ?? 0
+                                        updated.durationHours = newShiftDuration
+                                        dataManager.updateShift(shift: updated)
+                                    }
+                                } else {
+                                    let shift = Shift(
+                                        date: newShiftDate,
+                                        shiftType: newShiftType,
+                                        isFixedIncome: isFixedIncome,
+                                        fixedAmount: Double(fixedAmount) ?? 0,
+                                        durationHours: newShiftDuration,
+                                        hourlyRate: dataManager.defaultHourlyRate,
+                                        isCompleted: false,
+                                        actualIncome: 0,
+                                        isArchived: false
+                                    )
+                                    dataManager.addShift(shift: shift)
+                                }
                                 showingAddShift = false
                             }
                         }
