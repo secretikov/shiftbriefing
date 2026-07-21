@@ -79,7 +79,7 @@ class DataManager: ObservableObject {
 
     var burnoutRisk: Double {
         // Простой расчет риска выгорания на основе часов за последние 7 дней (макс 60 часов)
-        var calendar = Calendar.current
+        let calendar = Calendar.current
         let now = Date()
         let weekAgo = calendar.date(byAdding: .day, value: -7, to: now)!
 
@@ -91,10 +91,10 @@ class DataManager: ObservableObject {
     func startLiveShift() {
         let liveShift = Shift(
             date: Date(),
-            isLive: true,
-            startTime: Date(),
             durationHours: 0,
-            hourlyRate: defaultHourlyRate
+            hourlyRate: defaultHourlyRate,
+            isLive: true,
+            startTime: Date()
         )
         shifts.append(liveShift)
         shifts.sort { $0.date < $1.date }
