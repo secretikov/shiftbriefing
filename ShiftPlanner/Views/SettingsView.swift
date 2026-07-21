@@ -19,10 +19,9 @@ struct SettingsView: View {
 
                         // Карточка профиля и ранга
                         VStack(spacing: 15) {
-                            Image(systemName: "person.crop.circle.badge.checkmark")
-                                .font(.system(size: 60))
-                                .foregroundColor(.cyan)
-                                .modifier(NeonGlowModifier(color: .cyan, radius: 5))
+                            DynamicAvatarView(rank: dataManager.userRank)
+                                .padding(.top, 10)
+                                .padding(.bottom, 5)
 
                             Text(dataManager.userName.isEmpty ? "Пользователь" : dataManager.userName)
                                 .font(.title2.bold())
@@ -122,5 +121,80 @@ struct SettingsView: View {
             dataManager.monthlyGoal = goal
         }
         showSavedAlert = true
+    }
+}
+
+
+struct DynamicAvatarView: View {
+    var rank: String
+    @State private var isAnimating = false
+
+    var body: some View {
+        ZStack {
+            // Background glow based on rank
+            Circle()
+                .fill(glowColor().opacity(0.3))
+                .frame(width: avatarSize() + 20, height: avatarSize() + 20)
+                .modifier(NeonGlowModifier(color: glowColor(), radius: glowRadius()))
+                .scaleEffect(isAnimating ? 1.05 : 0.95)
+
+            // Inner complex shapes for higher ranks
+            if rank != "Новичок" && rank != "Работяга" {
+                Circle()
+                    .stroke(LinearGradient(colors: [glowColor(), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
+                    .frame(width: avatarSize() + 10, height: avatarSize() + 10)
+                    .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
+            }
+
+            if rank == "Магнат" || rank == "Властелин смен" {
+                Circle()
+                    .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [5]))
+                    .frame(width: avatarSize() + 30, height: avatarSize() + 30)
+                    .foregroundColor(glowColor())
+                    .rotationEffect(Angle(degrees: isAnimating ? -360 : 0))
+            }
+
+            // Core Avatar
+            ZStack {
+                Circle()
+                    .fill(Color.black.opacity(0.6))
+                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+
+                Image(systemName: "person.crop.circle.badge.checkmark")
+                    .font(.system(size: avatarSize() * 0.5, weight: .light))
+                    .foregroundColor(glowColor())
+            }
+            .frame(width: avatarSize(), height: avatarSize())
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 8.0).repeatForever(autoreverses: false)) {
+                isAnimating = true
+            }
+        }
+    }
+
+    private func avatarSize() -> CGFloat {
+        return 100
+    }
+
+    private func glowColor() -> Color {
+        switch rank {
+        case "Новичок": return .cyan
+        case "Работяга": return .blue
+        case "Опытный": return .purple
+        case "Мастер": return .orange
+        case "Магнат": return .yellow
+        case "Властелин смен": return .red
+        default: return .cyan
+        }
+    }
+
+    private func glowRadius() -> CGFloat {
+        switch rank {
+        case "Новичок", "Работяга": return 10
+        case "Опытный", "Мастер": return 15
+        case "Магнат", "Властелин смен": return 25
+        default: return 10
+        }
     }
 }

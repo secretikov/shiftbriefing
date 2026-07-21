@@ -11,100 +11,90 @@ struct FinanceView: View {
     @State private var itemCategory: FinancialCategory = .expense
     @State private var itemPriority: Int = 1
 
+    // Animation States
+    @State private var activeDraggingId: UUID? = nil
+
     var body: some View {
         NavigationView {
             ZStack {
                 Color.clear.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Balance Card
-                        VStack(spacing: 15) {
-                            HStack {
-                                Text("Остаток средств")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(String(format: "%.2f", dataManager.remainingBalance)) ₽")
-                                    .font(.title2.bold())
-                                    .foregroundColor(dataManager.remainingBalance >= 0 ? .primary : .red)
-                            }
+                    VStack(spacing: 30) {
 
-                            ProgressView(value: dataManager.financeAllocationProgress)
-                                .tint(dataManager.remainingBalance >= 0 ? .green : .red)
+                        // Smart Budgeting Central Bubble
+                        VStack(spacing: 10) {
+                            Text("Свободные средства")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+
+                            ZStack {
+                                Circle()
+                                    .fill(LinearGradient(colors: [Color.cyan.opacity(0.4), Color.blue.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                    .frame(width: 160, height: 160)
+                                    .modifier(NeonGlowModifier(color: .cyan, radius: dataManager.remainingBalance > 0 ? 15 : 0))
+                                    .overlay(
+                                        Circle().stroke(LinearGradient(colors: [.white.opacity(0.6), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
+                                    )
+
+                                VStack {
+                                    Text("\(String(format: "%.0f", dataManager.remainingBalance)) ₽")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundColor(dataManager.remainingBalance >= 0 ? .white : .red)
+                                        .minimumScaleFactor(0.5)
+                                        .padding(.horizontal, 10)
+                                }
+                            }
 
                             if dataManager.remainingBalance < 0 {
                                 HStack {
-                                    Image(systemName: "info.circle")
+                                    Image(systemName: "exclamationmark.triangle.fill")
                                         .foregroundColor(.orange)
-                                    Text("Осталось отработать смен: \(dataManager.shiftsNeededForGoals)")
+                                    Text("Нужно еще \(dataManager.shiftsNeededForGoals) смен")
                                         .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
+                                        .foregroundColor(.orange)
                                 }
                             }
                         }
-                        .liquidGlass()
-                        .padding(.horizontal)
+                        .padding(.top, 20)
 
-                        // Goals/Expenses List grouped by priority
-                        ForEach(1...3, id: \.self) { priority in
+                        // Goals/Expenses Categories Grid
+                        let priorities = [1, 2, 3]
+                        ForEach(priorities, id: \.self) { priority in
                             let items = dataManager.financialItems.filter { $0.priority == priority }
                             if !items.isEmpty {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("Приоритет \(priority)")
+                                VStack(alignment: .leading, spacing: 15) {
+                                    Text(priorityTitle(for: priority))
                                         .font(.headline)
+                                        .foregroundColor(.white.opacity(0.8))
                                         .padding(.horizontal)
 
-                                    ForEach(items) { item in
-                                        HStack {
-                                            VStack(alignment: .leading) {
-                                                Text(item.name)
-                                                    .font(.subheadline.bold())
-                                                Text(item.category.rawValue)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            Spacer()
-                                            Text("-\(String(format: "%.0f", item.amount)) ₽")
-                                                .foregroundColor(item.category == .debt ? .red : .primary)
-
-                                            Button(action: {
-                                                var updated = item
-                                                updated.isCompleted.toggle()
-                                                dataManager.updateFinancialItem(item: updated)
-                                            }) {
-                                                Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                                                    .foregroundColor(item.isCompleted ? .green : .gray)
-                                            }
-                                        }
-                                        .liquidGlass()
-                                        .padding(.horizontal)
-                                        .contextMenu {
-                                            Button(action: {
+                                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                                        ForEach(items) { item in
+                                            FinancialBubbleView(item: item) { updatedItem in
+                                                dataManager.updateFinancialItem(item: updatedItem)
+                                            } editAction: {
                                                 editingItemId = item.id
                                                 itemName = item.name
                                                 itemAmount = String(format: "%.0f", item.amount)
                                                 itemCategory = item.category
                                                 itemPriority = item.priority
                                                 showingAddFinance = true
-                                            }) {
-                                                Label("Редактировать", systemImage: "pencil")
-                                            }
-                                            Button(role: .destructive, action: {
+                                            } deleteAction: {
                                                 dataManager.deleteFinancialItem(id: item.id)
-                                            }) {
-                                                Label("Удалить", systemImage: "trash")
                                             }
                                         }
                                     }
+                                    .padding(.horizontal)
                                 }
                             }
                         }
+
                     }
-                    .padding(.vertical)
+                    .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Распределение")
+            .navigationTitle("Умный Кошелек")
             .toolbar {
                 Button(action: {
                     editingItemId = nil
@@ -114,8 +104,14 @@ struct FinanceView: View {
                     itemPriority = 1
                     showingAddFinance = true
                 }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
+                    ZStack {
+                        Circle()
+                            .fill(Color.cyan.opacity(0.2))
+                            .frame(width: 35, height: 35)
+                        Image(systemName: "plus")
+                            .font(.title3.bold())
+                            .foregroundColor(.cyan)
+                    }
                 }
             }
             .sheet(isPresented: $showingAddFinance) {
@@ -142,10 +138,10 @@ struct FinanceView: View {
                                     }
                                     .tint(.cyan)
 
-                                    Picker("Приоритет (1-Высокий)", selection: $itemPriority) {
-                                        ForEach(1...3, id: \.self) { prio in
-                                            Text("\(prio)").tag(prio)
-                                        }
+                                    Picker("Приоритет", selection: $itemPriority) {
+                                        Text("1 - Высокий").tag(1)
+                                        Text("2 - Средний").tag(2)
+                                        Text("3 - Низкий").tag(3)
                                     }
                                     .tint(.cyan)
                                 }
@@ -186,6 +182,101 @@ struct FinanceView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func priorityTitle(for priority: Int) -> String {
+        switch priority {
+        case 1: return "Обязательные (Долги / Жизнь)"
+        case 2: return "Накопления (Инвестиции / Цели)"
+        default: return "Желания (Развлечения / Покупки)"
+        }
+    }
+}
+
+struct FinancialBubbleView: View {
+    var item: FinancialItem
+    var toggleAction: (FinancialItem) -> Void
+    var editAction: () -> Void
+    var deleteAction: () -> Void
+
+    @State private var isAnimating = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(Color.black.opacity(0.4))
+                    .frame(width: 80, height: 80)
+
+                // Liquid fill simulation
+                if item.isCompleted {
+                    Circle()
+                        .fill(LinearGradient(colors: [bubbleColor().opacity(0.8), bubbleColor().opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 80, height: 80)
+                        .modifier(NeonGlowModifier(color: bubbleColor(), radius: 8))
+                        .scaleEffect(isAnimating ? 1.05 : 1.0)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                                isAnimating = true
+                            }
+                        }
+                }
+
+                Circle()
+                    .stroke(LinearGradient(colors: [.white.opacity(0.5), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.5)
+                    .frame(width: 80, height: 80)
+
+                Image(systemName: iconName())
+                    .font(.title2)
+                    .foregroundColor(item.isCompleted ? .white : bubbleColor().opacity(0.7))
+            }
+            .onTapGesture {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                    var updatedItem = item
+                    updatedItem.isCompleted.toggle()
+                    toggleAction(updatedItem)
+                }
+            }
+
+            Text(item.name)
+                .font(.caption.bold())
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+
+            Text("\(String(format: "%.0f", item.amount)) ₽")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding(10)
+        .background(Color.white.opacity(0.03))
+        .cornerRadius(15)
+        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        .contextMenu {
+            Button(action: editAction) {
+                Label("Редактировать", systemImage: "pencil")
+            }
+            Button(role: .destructive, action: deleteAction) {
+                Label("Удалить", systemImage: "trash")
+            }
+        }
+    }
+
+    private func bubbleColor() -> Color {
+        switch item.category {
+        case .debt: return .red
+        case .investment: return .green
+        case .savings: return .blue
+        case .expense: return .orange
+        }
+    }
+
+    private func iconName() -> String {
+        switch item.category {
+        case .debt: return "exclamationmark.circle"
+        case .investment: return "arrow.up.right.circle"
+        case .savings: return "safe"
+        case .expense: return "cart"
         }
     }
 }

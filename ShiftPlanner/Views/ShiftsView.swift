@@ -221,41 +221,56 @@ struct ShiftsView: View {
                 }
             }
             .navigationTitle("Смены")
-            .toolbar {
-                Button(action: {
-                    editingShiftId = nil
-                    newShiftDate = Date()
-                    newShiftType = .standard
-                    isFixedIncome = false
-                    fixedAmount = ""
-                    newShiftDuration = 8.0
-                    showingAddShift = true
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.cyan.opacity(0.2))
-                            .frame(width: 35, height: 35)
-                            .modifier(NeonGlowModifier(color: .cyan, radius: 5))
-                        Image(systemName: "plus")
-                            .font(.title3.bold())
-                            .foregroundColor(.cyan)
-                    }
-                }
 
-                if !dataManager.shifts.contains(where: { $0.isLive }) {
-                    Button(action: {
-                        dataManager.startLiveShift()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.green.opacity(0.2))
-                                .frame(width: 35, height: 35)
-                                .modifier(NeonGlowModifier(color: .green, radius: 5))
-                            Image(systemName: "play.fill")
-                                .font(.title3.bold())
-                                .foregroundColor(.green)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            editingShiftId = nil
+                            newShiftDate = Date()
+                            newShiftType = .standard
+                            isFixedIncome = false
+                            fixedAmount = ""
+                            newShiftDuration = 8.0
+                            showingAddShift = true
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.cyan.opacity(0.3))
+                                    .frame(width: 38, height: 38)
+                                    .modifier(NeonGlowModifier(color: .cyan, radius: 8))
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+
+                        if !dataManager.shifts.contains(where: { $0.isLive }) {
+                            Button(action: {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                                    dataManager.startLiveShift()
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(LinearGradient(colors: [Color.green.opacity(0.8), Color.green.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .frame(width: 38, height: 38)
+                                        .modifier(NeonGlowModifier(color: .green, radius: 12))
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                            }
                         }
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(.ultraThinMaterial)
+                            .shadow(color: Color.white.opacity(0.1), radius: 10, x: 0, y: 5)
+                            .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                    )
                 }
             }
             // Sheet for Adding Shift
