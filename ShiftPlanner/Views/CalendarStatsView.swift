@@ -96,40 +96,38 @@ struct CalendarStatsView: View {
                         }
 
                         // Календарь
-                        VStack {
-                            DatePicker(
-                                "Календарь",
-                                selection: $selectedDate,
-                                displayedComponents: [.date]
-                            )
-                            .datePickerStyle(.graphical)
-                            .tint(.indigo)
+                        CustomCalendarView(selectedDate: $selectedDate)
+                            .padding(.horizontal)
 
-                            // Подсказка, если в этот день есть смена
-                            if let shift = dataManager.shifts.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
-                                Divider()
+                        // Детали выбранного дня
+                        if let shift = dataManager.shifts.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) && !$0.isArchived }) {
+                            VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text("Смена: \(shift.shiftType.rawValue)")
                                             .font(.headline)
+                                            .foregroundColor(.white)
                                         Text(shift.isCompleted ? "Завершена" : "Запланирована")
                                             .font(.caption)
-                                            .foregroundColor(shift.isCompleted ? .green : .secondary)
+                                            .foregroundColor(shift.isCompleted ? .green : .cyan)
                                     }
                                     Spacer()
                                     Text("\(String(format: "%.0f", shift.finalIncome)) ₽")
-                                        .font(.title3.bold())
+                                        .font(.title2.bold())
+                                        .foregroundColor(shift.isCompleted ? .green : .white)
                                 }
-                                .padding(.top, 5)
-                            } else {
-                                Divider()
+                            }
+                            .liquidGlass()
+                            .padding(.horizontal)
+                        } else {
+                            VStack {
                                 Text("Нет смен в этот день")
                                     .foregroundColor(.secondary)
-                                    .padding(.top, 5)
                             }
+                            .frame(maxWidth: .infinity)
+                            .liquidGlass()
+                            .padding(.horizontal)
                         }
-                        .liquidGlass()
-                        .padding(.horizontal)
 
                     }
                     .padding(.vertical)

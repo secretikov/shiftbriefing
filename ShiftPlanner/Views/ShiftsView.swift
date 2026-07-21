@@ -244,56 +244,88 @@ struct ShiftsView: View {
             // Sheet for Adding Shift
             .sheet(isPresented: $showingAddShift) {
                 NavigationView {
-                    Form {
-                        DatePicker("Дата", selection: $newShiftDate, displayedComponents: .date)
-                        Picker("Тип смены", selection: $newShiftType) {
-                            ForEach(ShiftType.allCases, id: \.self) { type in
-                                Text(type.rawValue).tag(type)
+                    ZStack {
+                        Color(red: 0.05, green: 0.05, blue: 0.1).ignoresSafeArea()
+                        ScrollView {
+                            VStack(spacing: 20) {
+                                VStack(spacing: 15) {
+                                    DatePicker("Дата", selection: $newShiftDate, displayedComponents: .date)
+                                        .foregroundColor(.white)
+                                    Picker("Тип смены", selection: $newShiftType) {
+                                        ForEach(ShiftType.allCases, id: \.self) { type in
+                                            Text(type.rawValue).tag(type)
+                                        }
+                                    }
+                                    .tint(.cyan)
+                                }
+                                .liquidGlass()
+                                .padding(.horizontal)
+
+                                VStack(spacing: 15) {
+                                    Toggle("Фиксированная сумма", isOn: $isFixedIncome)
+                                        .foregroundColor(.white)
+                                        .tint(.cyan)
+
+                                    if isFixedIncome {
+                                        TextField("Сумма за смену (₽)", text: $fixedAmount)
+                                            .keyboardType(.decimalPad)
+                                            .glassTextField()
+                                    } else {
+                                        Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1.0...24.0, step: 0.5)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .liquidGlass()
+                                .padding(.horizontal)
+
+                                Button(action: {
+                                    if let id = editingShiftId {
+                                        if let index = dataManager.shifts.firstIndex(where: { $0.id == id }) {
+                                            var updated = dataManager.shifts[index]
+                                            updated.date = newShiftDate
+                                            updated.shiftType = newShiftType
+                                            updated.isFixedIncome = isFixedIncome
+                                            updated.fixedAmount = Double(fixedAmount) ?? 0
+                                            updated.durationHours = newShiftDuration
+                                            dataManager.updateShift(shift: updated)
+                                        }
+                                    } else {
+                                        let shift = Shift(
+                                            date: newShiftDate,
+                                            shiftType: newShiftType,
+                                            isFixedIncome: isFixedIncome,
+                                            fixedAmount: Double(fixedAmount) ?? 0,
+                                            durationHours: newShiftDuration,
+                                            hourlyRate: dataManager.defaultHourlyRate,
+                                            isCompleted: false,
+                                            actualIncome: 0,
+                                            isArchived: false
+                                        )
+                                        dataManager.addShift(shift: shift)
+                                    }
+                                    showingAddShift = false
+                                }) {
+                                    Text("Сохранить")
+                                        .font(.headline)
+                                        .foregroundColor(.black)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.cyan)
+                                        .cornerRadius(15)
+                                        .modifier(NeonGlowModifier(color: .cyan, radius: 5))
+                                }
+                                .padding(.horizontal)
+                                .padding(.top, 10)
                             }
-                        }
-
-                        Toggle("Фиксированная сумма", isOn: $isFixedIncome)
-
-                        if isFixedIncome {
-                            TextField("Сумма за смену (₽)", text: $fixedAmount)
-                                .keyboardType(.decimalPad)
-                        } else {
-                            Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1.0...24.0, step: 0.5)
+                            .padding(.vertical)
                         }
                     }
                     .navigationTitle(editingShiftId == nil ? "Новая смена" : "Редактировать смену")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("Отмена") { showingAddShift = false }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Сохранить") {
-                                if let id = editingShiftId {
-                                    if let index = dataManager.shifts.firstIndex(where: { $0.id == id }) {
-                                        var updated = dataManager.shifts[index]
-                                        updated.date = newShiftDate
-                                        updated.shiftType = newShiftType
-                                        updated.isFixedIncome = isFixedIncome
-                                        updated.fixedAmount = Double(fixedAmount) ?? 0
-                                        updated.durationHours = newShiftDuration
-                                        dataManager.updateShift(shift: updated)
-                                    }
-                                } else {
-                                    let shift = Shift(
-                                        date: newShiftDate,
-                                        shiftType: newShiftType,
-                                        isFixedIncome: isFixedIncome,
-                                        fixedAmount: Double(fixedAmount) ?? 0,
-                                        durationHours: newShiftDuration,
-                                        hourlyRate: dataManager.defaultHourlyRate,
-                                        isCompleted: false,
-                                        actualIncome: 0,
-                                        isArchived: false
-                                    )
-                                    dataManager.addShift(shift: shift)
-                                }
-                                showingAddShift = false
-                            }
+                            Button("Закрыть") { showingAddShift = false }
+                                .foregroundColor(.white)
                         }
                     }
                 }

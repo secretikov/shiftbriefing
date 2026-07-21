@@ -120,38 +120,68 @@ struct FinanceView: View {
             }
             .sheet(isPresented: $showingAddFinance) {
                 NavigationView {
-                    Form {
-                        TextField("Название", text: $itemName)
-                        TextField("Сумма (₽)", text: $itemAmount)
-                            .keyboardType(.decimalPad)
+                    ZStack {
+                        Color(red: 0.05, green: 0.05, blue: 0.1).ignoresSafeArea()
+                        ScrollView {
+                            VStack(spacing: 20) {
+                                VStack(spacing: 15) {
+                                    TextField("Название", text: $itemName)
+                                        .glassTextField()
+                                    TextField("Сумма (₽)", text: $itemAmount)
+                                        .keyboardType(.decimalPad)
+                                        .glassTextField()
+                                }
+                                .liquidGlass()
+                                .padding(.horizontal)
 
-                        Picker("Категория", selection: $itemCategory) {
-                            ForEach(FinancialCategory.allCases, id: \.self) { cat in
-                                Text(cat.rawValue).tag(cat)
-                            }
-                        }
+                                VStack(spacing: 15) {
+                                    Picker("Категория", selection: $itemCategory) {
+                                        ForEach(FinancialCategory.allCases, id: \.self) { cat in
+                                            Text(cat.rawValue).tag(cat)
+                                        }
+                                    }
+                                    .tint(.cyan)
 
-                        Picker("Приоритет (1-Высокий)", selection: $itemPriority) {
-                            ForEach(1...3, id: \.self) { prio in
-                                Text("\(prio)").tag(prio)
+                                    Picker("Приоритет (1-Высокий)", selection: $itemPriority) {
+                                        ForEach(1...3, id: \.self) { prio in
+                                            Text("\(prio)").tag(prio)
+                                        }
+                                    }
+                                    .tint(.cyan)
+                                }
+                                .liquidGlass()
+                                .padding(.horizontal)
+
+                                Button(action: {
+                                    if let id = editingItemId {
+                                        let updated = FinancialItem(id: id, name: itemName, amount: Double(itemAmount) ?? 0, category: itemCategory, priority: itemPriority, isCompleted: false)
+                                        dataManager.updateFinancialItem(item: updated)
+                                    } else {
+                                        dataManager.addFinancialItem(name: itemName, amount: Double(itemAmount) ?? 0, category: itemCategory, priority: itemPriority)
+                                    }
+                                    showingAddFinance = false
+                                }) {
+                                    Text("Сохранить")
+                                        .font(.headline)
+                                        .foregroundColor(.black)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.cyan)
+                                        .cornerRadius(15)
+                                        .modifier(NeonGlowModifier(color: .cyan, radius: 5))
+                                }
+                                .padding(.horizontal)
+                                .padding(.top, 10)
                             }
+                            .padding(.vertical)
                         }
                     }
                     .navigationTitle(editingItemId == nil ? "Новая цель" : "Редактирование")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("Отмена") { showingAddFinance = false }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Сохранить") {
-                                if let id = editingItemId {
-                                    let updated = FinancialItem(id: id, name: itemName, amount: Double(itemAmount) ?? 0, category: itemCategory, priority: itemPriority, isCompleted: false)
-                                    dataManager.updateFinancialItem(item: updated)
-                                } else {
-                                    dataManager.addFinancialItem(name: itemName, amount: Double(itemAmount) ?? 0, category: itemCategory, priority: itemPriority)
-                                }
-                                showingAddFinance = false
-                            }
+                            Button("Закрыть") { showingAddFinance = false }
+                                .foregroundColor(.white)
                         }
                     }
                 }
