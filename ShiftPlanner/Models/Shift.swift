@@ -31,6 +31,9 @@ struct Shift: Identifiable, Codable {
     var isCompleted: Bool = false
     var actualIncome: Double = 0.0
 
+    // Статус
+    var isArchived: Bool = false
+
     var expectedIncome: Double {
         if isFixedIncome {
             return fixedAmount * shiftType.multiplier
