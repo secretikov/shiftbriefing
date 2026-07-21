@@ -19,7 +19,7 @@ struct CalendarStatsView: View {
                                 Text("Цель на месяц")
                                     .font(.headline)
                                 Spacer()
-                                Text("\(String(format: "%.0f", dataManager.thisMonthIncome)) / \(String(format: "%.0f", dataManager.monthlyGoal)) ₽")
+                                Text("\(String(format: "%.0f", dataManager.thisMonthIncome)) / \(String(format: "%.0f", dataManager.monthlyGoal)) \(dataManager.currencySymbol)")
                                     .font(.subheadline.bold())
                                     .foregroundColor(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .primary)
                             }
@@ -32,8 +32,8 @@ struct CalendarStatsView: View {
 
                         // Статистика (плитки)
                         HStack(spacing: 15) {
-                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) ₽", icon: "chart.bar.fill", color: .purple)
-                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) ₽", icon: "sum", color: .orange)
+                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) \(dataManager.currencySymbol)", icon: "chart.bar.fill", color: .purple)
+                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) \(dataManager.currencySymbol)", icon: "sum", color: .orange)
                         }
                         .padding(.horizontal)
 
@@ -102,7 +102,7 @@ struct CalendarStatsView: View {
                                             .foregroundColor(shift.isCompleted ? .green : .cyan)
                                     }
                                     Spacer()
-                                    Text("\(String(format: "%.0f", shift.finalIncome)) ₽")
+                                    Text("\(String(format: "%.0f", shift.finalIncome)) \(dataManager.currencySymbol)")
                                         .font(.title2.bold())
                                         .foregroundColor(shift.isCompleted ? .green : .white)
                                 }
@@ -199,7 +199,7 @@ struct FluidVesselView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("+\(String(format: "%.0f", projectedIncome)) ₽")
+                Text("+\(String(format: "%.0f", projectedIncome)) \(dataManager.currencySymbol)")
                     .font(.title3.bold())
                     .foregroundColor(.yellow)
                     .modifier(NeonGlowModifier(color: .yellow, radius: 5))

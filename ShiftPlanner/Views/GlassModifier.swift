@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GlassModifier: ViewModifier {
-    var cornerRadius: CGFloat = 20
+    var cornerRadius: CGFloat = 25
     var padding: CGFloat = 16
 
     func body(content: Content) -> some View {
@@ -38,7 +38,7 @@ struct NeonGlowModifier: ViewModifier {
 }
 
 extension View {
-    func liquidGlass(cornerRadius: CGFloat = 20, padding: CGFloat = 16) -> some View {
+    func liquidGlass(cornerRadius: CGFloat = 25, padding: CGFloat = 16) -> some View {
         self.modifier(GlassModifier(cornerRadius: cornerRadius, padding: padding))
     }
 }
@@ -49,9 +49,9 @@ struct GlassTextFieldModifier: ViewModifier {
         content
             .padding(12)
             .background(Color.white.opacity(0.05))
-            .cornerRadius(10)
+            .cornerRadius(15)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 15)
                     .stroke(Color.white.opacity(0.2), lineWidth: 1)
             )
             .foregroundColor(.white)

@@ -38,7 +38,7 @@ struct SettingsView: View {
                                     .modifier(NeonGlowModifier(color: .yellow, radius: 3))
                             }
 
-                            Text("Всего заработано: \(String(format: "%.0f", dataManager.totalIncome)) ₽")
+                            Text("Всего заработано: \(String(format: "%.0f", dataManager.totalIncome)) \(dataManager.currencySymbol)")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
@@ -48,7 +48,7 @@ struct SettingsView: View {
 
                         // Настройки
                         VStack(alignment: .leading, spacing: 20) {
-                            Text("Настройки")
+                            Text("Основные Настройки")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding(.horizontal)
@@ -62,7 +62,7 @@ struct SettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Стандартная ставка в час (₽)")
+                                Text("Стандартная ставка в час (\(dataManager.currencySymbol))")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 TextField("Ставка", text: $rateInput)
@@ -71,13 +71,54 @@ struct SettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Финансовая цель на месяц (₽)")
+                                Text("Финансовая цель на месяц (\(dataManager.currencySymbol))")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 TextField("Цель", text: $goalInput)
                                     .keyboardType(.decimalPad)
                                     .glassTextField()
                             }
+                        }
+                        .liquidGlass()
+                        .padding(.horizontal)
+
+                        // Дополнительные настройки
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("Дополнительно")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal)
+
+                            HStack {
+                                Text("Валюта")
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Picker("Валюта", selection: $dataManager.currencySymbol) {
+                                    Text("₽ (RUB)").tag("₽")
+                                    Text("$ (USD)").tag("$")
+                                    Text("€ (EUR)").tag("€")
+                                }
+                                .tint(.cyan)
+                                .onChange(of: dataManager.currencySymbol) { _ in dataManager.saveData() }
+                            }
+
+                            HStack {
+                                Text("График работы")
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Picker("График", selection: $dataManager.workScheduleType) {
+                                    Text("Свободный").tag("Свободный")
+                                    Text("2/2").tag("2/2")
+                                    Text("5/2").tag("5/2")
+                                }
+                                .tint(.cyan)
+                                .onChange(of: dataManager.workScheduleType) { _ in dataManager.saveData() }
+                            }
+
+                            Toggle("Уведомления о сменах", isOn: $dataManager.notificationsEnabled)
+                                .foregroundColor(.white)
+                                .tint(.cyan)
+                                .onChange(of: dataManager.notificationsEnabled) { _ in dataManager.saveData() }
 
                             Button(action: saveSettings) {
                                 Text("Сохранить изменения")
@@ -86,7 +127,7 @@ struct SettingsView: View {
                                     .frame(maxWidth: .infinity)
                                     .padding()
                                     .background(Color.green)
-                                    .cornerRadius(15)
+                                    .cornerRadius(20)
                                     .modifier(NeonGlowModifier(color: .green, radius: 5))
                             }
                             .padding(.top, 10)

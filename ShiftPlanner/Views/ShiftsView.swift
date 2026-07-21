@@ -27,7 +27,7 @@ struct LiveShiftTimerView: View {
                 Text("Earned:")
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("+\(String(format: "%.2f", earnedIncome)) ₽")
+                Text("+\(String(format: "%.2f", earnedIncome)) \(dataManager.currencySymbol)")
                     .font(.title2.bold())
                     .foregroundColor(.green)
                     .modifier(NeonGlowModifier(color: .green, radius: 5))
@@ -43,9 +43,9 @@ struct LiveShiftTimerView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.red.opacity(0.6))
-                    .cornerRadius(15)
+                    .cornerRadius(20)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 15)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.red, lineWidth: 1)
                     )
             }
@@ -128,7 +128,7 @@ struct ShiftsView: View {
                             Text("Общий доход")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("\(String(format: "%.2f", dataManager.totalIncome)) ₽")
+                            Text("\(String(format: "%.2f", dataManager.totalIncome)) \(dataManager.currencySymbol)")
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(.primary)
                         }
@@ -166,7 +166,7 @@ struct ShiftsView: View {
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing) {
-                                    Text("+\(String(format: "%.0f", shift.finalIncome)) ₽")
+                                    Text("+\(String(format: "%.0f", shift.finalIncome)) \(dataManager.currencySymbol)")
                                         .font(.title3.bold())
                                         .foregroundColor(shift.isCompleted ? .green : .primary)
 
@@ -224,7 +224,7 @@ struct ShiftsView: View {
 
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 20) {
                         Button(action: {
                             editingShiftId = nil
                             newShiftDate = Date()
@@ -234,15 +234,10 @@ struct ShiftsView: View {
                             newShiftDuration = 8.0
                             showingAddShift = true
                         }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.cyan.opacity(0.3))
-                                    .frame(width: 38, height: 38)
-                                    .modifier(NeonGlowModifier(color: .cyan, radius: 8))
-                                Image(systemName: "plus")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.cyan)
+                                .modifier(NeonGlowModifier(color: .cyan, radius: 5))
                         }
 
                         if !dataManager.shifts.contains(where: { $0.isLive }) {
@@ -251,33 +246,20 @@ struct ShiftsView: View {
                                     dataManager.startLiveShift()
                                 }
                             }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(LinearGradient(colors: [Color.green.opacity(0.8), Color.green.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                        .frame(width: 38, height: 38)
-                                        .modifier(NeonGlowModifier(color: .green, radius: 12))
-                                    Image(systemName: "play.fill")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(.white)
-                                }
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.green)
+                                    .modifier(NeonGlowModifier(color: .green, radius: 5))
                             }
                         }
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(.ultraThinMaterial)
-                            .shadow(color: Color.white.opacity(0.1), radius: 10, x: 0, y: 5)
-                            .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
-                    )
                 }
             }
             // Sheet for Adding Shift
             .sheet(isPresented: $showingAddShift) {
                 NavigationView {
                     ZStack {
-                        Color(red: 0.05, green: 0.05, blue: 0.1).ignoresSafeArea()
+                        Color.clear.ignoresSafeArea()
                         ScrollView {
                             VStack(spacing: 20) {
                                 VStack(spacing: 15) {
@@ -299,7 +281,7 @@ struct ShiftsView: View {
                                         .tint(.cyan)
 
                                     if isFixedIncome {
-                                        TextField("Сумма за смену (₽)", text: $fixedAmount)
+                                        TextField("Сумма за смену (\(dataManager.currencySymbol))", text: $fixedAmount)
                                             .keyboardType(.decimalPad)
                                             .glassTextField()
                                     } else {
@@ -343,7 +325,7 @@ struct ShiftsView: View {
                                         .frame(maxWidth: .infinity)
                                         .padding()
                                         .background(Color.cyan)
-                                        .cornerRadius(15)
+                                        .cornerRadius(20)
                                         .modifier(NeonGlowModifier(color: .cyan, radius: 5))
                                 }
                                 .padding(.horizontal)
