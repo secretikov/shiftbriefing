@@ -106,6 +106,23 @@ struct ShiftsView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
+
+                        // Приветствие и Ранг
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(greetingMessage())
+                                    .font(.title2.bold())
+                                    .foregroundColor(.white)
+                                Text("Ранг: \(dataManager.userRank)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.cyan)
+                                    .modifier(NeonGlowModifier(color: .cyan, radius: 2))
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
                         // Summary card
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Общий доход")
@@ -344,5 +361,16 @@ struct ShiftsView: View {
                 Text("Введите сколько вы реально получили за эту смену.")
             }
         }
+    }
+
+    private func greetingMessage() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        var greeting = "Добрый день"
+        if hour < 6 { greeting = "Доброй ночи" }
+        else if hour < 12 { greeting = "Доброе утро" }
+        else if hour < 18 { greeting = "Добрый день" }
+        else { greeting = "Добрый вечер" }
+
+        return dataManager.userName.isEmpty ? "\(greeting)!" : "\(greeting), \(dataManager.userName)!"
     }
 }

@@ -5,8 +5,15 @@ class DataManager: ObservableObject {
     @Published var shifts: [Shift] = []
     @Published var financialItems: [FinancialItem] = []
 
-    @Published var defaultHourlyRate: Double = 1000.0 // Примерная ставка
-    @Published var monthlyGoal: Double = 100_000.0 // Цель заработка на месяц
+    @Published var defaultHourlyRate: Double = 1000.0 {
+        didSet { UserDefaults.standard.set(defaultHourlyRate, forKey: "saved_hourlyRate") }
+    }
+    @Published var monthlyGoal: Double = 100_000.0 {
+        didSet { UserDefaults.standard.set(monthlyGoal, forKey: "saved_monthlyGoal") }
+    }
+    @Published var userName: String = "" {
+        didSet { UserDefaults.standard.set(userName, forKey: "saved_userName") }
+    }
 
     var totalIncome: Double {
         shifts.filter { !$0.isArchived }.reduce(0) { $0 + $1.finalIncome }
@@ -57,7 +64,26 @@ class DataManager: ObservableObject {
     }
 
     init() {
+        self.defaultHourlyRate = UserDefaults.standard.double(forKey: "saved_hourlyRate") == 0 ? 1000.0 : UserDefaults.standard.double(forKey: "saved_hourlyRate")
+        self.monthlyGoal = UserDefaults.standard.double(forKey: "saved_monthlyGoal") == 0 ? 100000.0 : UserDefaults.standard.double(forKey: "saved_monthlyGoal")
+        self.userName = UserDefaults.standard.string(forKey: "saved_userName") ?? ""
         loadData()
+    }
+
+    // Геймификация
+    var userRank: String {
+        let earned = totalIncome
+        if earned >= 1_000_000 {
+            return "Олигарх"
+        } else if earned >= 500_000 {
+            return "Босс"
+        } else if earned >= 100_000 {
+            return "Профи"
+        } else if earned >= 50_000 {
+            return "Трудяга"
+        } else {
+            return "Новичок"
+        }
     }
 
     // Логика прогнозирования
