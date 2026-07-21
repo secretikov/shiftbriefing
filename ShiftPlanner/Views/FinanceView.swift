@@ -29,7 +29,7 @@ struct FinanceView: View {
                                     .foregroundColor(dataManager.remainingBalance >= 0 ? .primary : .red)
                             }
 
-                            ProgressView(value: min(max(dataManager.totalIncome / max(dataManager.totalAllocated, 1), 0), 1))
+                            ProgressView(value: dataManager.financeAllocationProgress)
                                 .tint(dataManager.remainingBalance >= 0 ? .green : .red)
 
                             if dataManager.remainingBalance < 0 {

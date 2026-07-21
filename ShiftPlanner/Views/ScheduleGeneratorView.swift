@@ -41,7 +41,7 @@ struct ScheduleGeneratorView: View {
                         TextField("Сумма за смену (₽)", text: $fixedAmount)
                             .keyboardType(.decimalPad)
                     } else {
-                        Stepper("Длительность: \(String(format: "%.1f", duration)) ч", value: $duration, in: 1...24, step: 0.5)
+                        Stepper("Длительность: \(String(format: "%.1f", duration)) ч", value: $duration, in: 1.0...24.0, step: 0.5)
                     }
                 }
             }

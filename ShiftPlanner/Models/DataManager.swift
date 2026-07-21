@@ -65,6 +65,18 @@ class DataManager: ObservableObject {
         shifts.filter { !$0.isCompleted && !$0.isArchived && !$0.isLive }.reduce(0) { $0 + $1.expectedIncome }
     }
 
+    var monthlyGoalProgress: Double {
+        let safeGoal = max(monthlyGoal, 1.0)
+        let progress = thisMonthIncome / safeGoal
+        return min(max(progress, 0.0), 1.0)
+    }
+
+    var financeAllocationProgress: Double {
+        let safeAllocated = max(totalAllocated, 1.0)
+        let progress = totalIncome / safeAllocated
+        return min(max(progress, 0.0), 1.0)
+    }
+
     var burnoutRisk: Double {
         // Простой расчет риска выгорания на основе часов за последние 7 дней (макс 60 часов)
         var calendar = Calendar.current

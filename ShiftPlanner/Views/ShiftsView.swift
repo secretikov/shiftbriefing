@@ -258,7 +258,7 @@ struct ShiftsView: View {
                             TextField("Сумма за смену (₽)", text: $fixedAmount)
                                 .keyboardType(.decimalPad)
                         } else {
-                            Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1...24, step: 0.5)
+                            Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1.0...24.0, step: 0.5)
                         }
                     }
                     .navigationTitle(editingShiftId == nil ? "Новая смена" : "Редактировать смену")
