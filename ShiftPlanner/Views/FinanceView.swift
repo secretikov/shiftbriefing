@@ -16,7 +16,7 @@ struct FinanceView: View {
                                 Text("Остаток средств")
                                     .font(.headline)
                                 Spacer()
-                                Text("\(dataManager.remainingBalance, specifier: "%.2f") ₽")
+                                Text("\(String(format: "%.2f", dataManager.remainingBalance)) ₽")
                                     .font(.title2.bold())
                                     .foregroundColor(dataManager.remainingBalance >= 0 ? .primary : .red)
                             }
@@ -46,7 +46,7 @@ struct FinanceView: View {
                                                     .foregroundColor(.secondary)
                                             }
                                             Spacer()
-                                            Text("-\(item.amount, specifier: "%.0f") ₽")
+                                            Text("-\(String(format: "%.0f", item.amount)) ₽")
                                                 .foregroundColor(item.category == .debt ? .red : .primary)
 
                                             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")

@@ -18,7 +18,7 @@ struct CalendarStatsView: View {
                                 Text("Цель на месяц")
                                     .font(.headline)
                                 Spacer()
-                                Text("\(dataManager.thisMonthIncome, specifier: "%.0f") / \(dataManager.monthlyGoal, specifier: "%.0f") ₽")
+                                Text("\(String(format: "%.0f", dataManager.thisMonthIncome)) / \(String(format: "%.0f", dataManager.monthlyGoal)) ₽")
                                     .font(.subheadline.bold())
                                     .foregroundColor(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .primary)
                             }
@@ -31,8 +31,8 @@ struct CalendarStatsView: View {
 
                         // Статистика (плитки)
                         HStack(spacing: 15) {
-                            StatBox(title: "За неделю", value: "\(dataManager.thisWeekIncome, specifier: "%.0f") ₽", icon: "chart.bar.fill", color: .purple)
-                            StatBox(title: "Средний доход", value: "\(dataManager.averageIncomePerShift, specifier: "%.0f") ₽", icon: "sum", color: .orange)
+                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) ₽", icon: "chart.bar.fill", color: .purple)
+                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) ₽", icon: "sum", color: .orange)
                         }
                         .padding(.horizontal)
 
@@ -58,7 +58,7 @@ struct CalendarStatsView: View {
                                             .foregroundColor(shift.isCompleted ? .green : .secondary)
                                     }
                                     Spacer()
-                                    Text("\(shift.finalIncome, specifier: "%.0f") ₽")
+                                    Text("\(String(format: "%.0f", shift.finalIncome)) ₽")
                                         .font(.title3.bold())
                                 }
                                 .padding(.top, 5)
