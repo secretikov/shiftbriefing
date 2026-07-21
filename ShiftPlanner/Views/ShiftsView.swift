@@ -1,5 +1,86 @@
 import SwiftUI
 
+struct LiveShiftTimerView: View {
+    var shift: Shift
+    @EnvironmentObject var dataManager: DataManager
+    @State private var elapsedSeconds: TimeInterval = 0
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        VStack(spacing: 15) {
+            HStack {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 10, height: 10)
+                    .modifier(NeonGlowModifier(color: .green))
+                Text("Live Shift")
+                    .font(.headline)
+                    .foregroundColor(.green)
+                Spacer()
+                Text(timeString(from: elapsedSeconds))
+                    .font(.system(.title3, design: .monospaced).bold())
+                    .foregroundColor(.cyan)
+            }
+
+            HStack {
+                Text("Earned:")
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("+\(String(format: "%.2f", earnedIncome)) ₽")
+                    .font(.title2.bold())
+                    .foregroundColor(.green)
+                    .modifier(NeonGlowModifier(color: .green, radius: 5))
+            }
+
+            Button(action: {
+                let durationHours = elapsedSeconds / 3600.0
+                dataManager.stopLiveShift(id: shift.id, finalDuration: durationHours, actualIncome: earnedIncome)
+            }) {
+                Text("Завершить смену")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red.opacity(0.6))
+                    .cornerRadius(15)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.red, lineWidth: 1)
+                    )
+            }
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .cornerRadius(20)
+        .shadow(color: Color.green.opacity(0.1), radius: 15, x: 0, y: 0)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.green.opacity(0.5), lineWidth: 1)
+        )
+        .onReceive(timer) { _ in
+            if let start = shift.startTime {
+                elapsedSeconds = Date().timeIntervalSince(start)
+            }
+        }
+        .onAppear {
+            if let start = shift.startTime {
+                elapsedSeconds = Date().timeIntervalSince(start)
+            }
+        }
+    }
+
+    var earnedIncome: Double {
+        (elapsedSeconds / 3600.0) * shift.hourlyRate * shift.shiftType.multiplier
+    }
+
+    func timeString(from timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = Int(timeInterval) / 60 % 60
+        let seconds = Int(timeInterval) % 60
+        return String(format: "%02ih %02im %02is", hours, minutes, seconds)
+    }
+}
+
 struct ShiftsView: View {
     @EnvironmentObject var dataManager: DataManager
     @State private var showingAddShift = false
@@ -37,8 +118,14 @@ struct ShiftsView: View {
                         .liquidGlass()
                         .padding(.horizontal)
 
+                        // Live Shift Card
+                        if let liveShift = dataManager.shifts.first(where: { $0.isLive }) {
+                            LiveShiftTimerView(shift: liveShift)
+                                .padding(.horizontal)
+                        }
+
                         // List of shifts
-                        ForEach(dataManager.shifts.filter { !$0.isArchived }) { shift in
+                        ForEach(dataManager.shifts.filter { !$0.isArchived && !$0.isLive }.reversed()) { shift in
                             HStack {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(shift.date, style: .date)
@@ -126,8 +213,31 @@ struct ShiftsView: View {
                     newShiftDuration = 8.0
                     showingAddShift = true
                 }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
+                    ZStack {
+                        Circle()
+                            .fill(Color.cyan.opacity(0.2))
+                            .frame(width: 35, height: 35)
+                            .modifier(NeonGlowModifier(color: .cyan, radius: 5))
+                        Image(systemName: "plus")
+                            .font(.title3.bold())
+                            .foregroundColor(.cyan)
+                    }
+                }
+
+                if !dataManager.shifts.contains(where: { $0.isLive }) {
+                    Button(action: {
+                        dataManager.startLiveShift()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.green.opacity(0.2))
+                                .frame(width: 35, height: 35)
+                                .modifier(NeonGlowModifier(color: .green, radius: 5))
+                            Image(systemName: "play.fill")
+                                .font(.title3.bold())
+                                .foregroundColor(.green)
+                        }
+                    }
                 }
             }
             // Sheet for Adding Shift

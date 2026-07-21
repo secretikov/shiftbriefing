@@ -37,6 +37,44 @@ struct CalendarStatsView: View {
                         }
                         .padding(.horizontal)
 
+                        // Индикатор выгорания
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Image(systemName: "flame.fill")
+                                    .foregroundColor(dataManager.burnoutRisk > 0.7 ? .red : .orange)
+                                Text("Риск выгорания")
+                                    .font(.headline)
+                                Spacer()
+                                Text("\(String(format: "%.0f", dataManager.burnoutRisk * 100))%")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(dataManager.burnoutRisk > 0.7 ? .red : (dataManager.burnoutRisk > 0.4 ? .yellow : .green))
+                            }
+
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(height: 10)
+                                        .cornerRadius(5)
+
+                                    Rectangle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [.green, .yellow, .red]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .frame(width: geometry.size.width * CGFloat(dataManager.burnoutRisk), height: 10)
+                                        .cornerRadius(5)
+                                        .modifier(NeonGlowModifier(color: dataManager.burnoutRisk > 0.7 ? .red : (dataManager.burnoutRisk > 0.4 ? .yellow : .green), radius: 3))
+                                }
+                            }
+                            .frame(height: 10)
+                        }
+                        .liquidGlass()
+                        .padding(.horizontal)
+
                         // Прогноз дохода
                         if dataManager.projectedIncomeForPlannedShifts > 0 {
                             VStack(alignment: .leading, spacing: 10) {
@@ -48,8 +86,9 @@ struct CalendarStatsView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 Text("+\(String(format: "%.0f", dataManager.projectedIncomeForPlannedShifts)) ₽")
-                                    .font(.title2.bold())
-                                    .foregroundColor(.primary)
+                                    .font(.system(size: 34, weight: .bold))
+                                    .foregroundColor(.cyan)
+                                    .modifier(NeonGlowModifier(color: .cyan, radius: 5))
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .liquidGlass()
