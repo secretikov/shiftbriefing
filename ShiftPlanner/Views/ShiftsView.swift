@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct LiveShiftTimerView: View {
     var shift: Shift
@@ -125,7 +126,7 @@ struct ShiftsView: View {
                         }
 
                         // List of shifts
-                        ForEach(dataManager.shifts.filter { !$0.isArchived && !$0.isLive }.reversed()) { shift in
+                        ForEach(Array(dataManager.shifts.filter { !$0.isArchived && !$0.isLive }.reversed())) { shift in
                             HStack {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(shift.date, style: .date)
