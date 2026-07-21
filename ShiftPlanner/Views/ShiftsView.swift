@@ -28,7 +28,7 @@ struct ShiftsView: View {
                             Text("Общий доход")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("\(dataManager.totalIncome, specifier: "%.2f") ₽")
+                            Text("\(String(format: "%.2f", dataManager.totalIncome)) ₽")
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(.primary)
                         }
@@ -52,7 +52,7 @@ struct ShiftsView: View {
                                             .cornerRadius(5)
 
                                         if !shift.isFixedIncome {
-                                            Text("\(shift.durationHours, specifier: "%.1f") ч")
+                                            Text("\(String(format: "%.1f", shift.durationHours)) ч")
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }
@@ -60,7 +60,7 @@ struct ShiftsView: View {
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing) {
-                                    Text("+\(shift.finalIncome, specifier: "%.0f") ₽")
+                                    Text("+\(String(format: "%.0f", shift.finalIncome)) ₽")
                                         .font(.title3.bold())
                                         .foregroundColor(shift.isCompleted ? .green : .primary)
 
@@ -115,7 +115,7 @@ struct ShiftsView: View {
                             TextField("Сумма за смену (₽)", text: $fixedAmount)
                                 .keyboardType(.decimalPad)
                         } else {
-                            Stepper("Длительность: \(newShiftDuration, specifier: "%.1f") ч", value: $newShiftDuration, in: 1...24, step: 0.5)
+                            Stepper("Длительность: \(String(format: "%.1f", newShiftDuration)) ч", value: $newShiftDuration, in: 1...24, step: 0.5)
                         }
                     }
                     .navigationTitle("Новая смена")
