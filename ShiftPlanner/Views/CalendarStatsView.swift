@@ -77,21 +77,11 @@ struct CalendarStatsView: View {
 
                         // Прогноз дохода
                         if dataManager.projectedIncomeForPlannedShifts > 0 {
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack {
-                                    Image(systemName: "sparkles")
-                                        .foregroundColor(.yellow)
-                                    Text("Прогнозируемый доход (от запланированных)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Text("+\(String(format: "%.0f", dataManager.projectedIncomeForPlannedShifts)) ₽")
-                                    .font(.system(size: 34, weight: .bold))
-                                    .foregroundColor(.cyan)
-                                    .modifier(NeonGlowModifier(color: .cyan, radius: 5))
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .liquidGlass()
+                            FluidVesselView(
+                                projectedIncome: dataManager.projectedIncomeForPlannedShifts,
+                                currentIncome: dataManager.thisMonthIncome,
+                                goal: dataManager.monthlyGoal
+                            )
                             .padding(.horizontal)
                         }
 
@@ -190,5 +180,67 @@ struct StatBox: View {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.white.opacity(0.3), lineWidth: 1)
         )
+    }
+}
+
+
+struct FluidVesselView: View {
+    var projectedIncome: Double
+    var currentIncome: Double
+    var goal: Double
+
+    var body: some View {
+        VStack(spacing: 15) {
+            HStack {
+                Image(systemName: "sparkles")
+                    .foregroundColor(.yellow)
+                    .modifier(NeonGlowModifier(color: .yellow, radius: 5))
+                Text("Прогноз от AI без ИИ")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("+\(String(format: "%.0f", projectedIncome)) ₽")
+                    .font(.title3.bold())
+                    .foregroundColor(.yellow)
+                    .modifier(NeonGlowModifier(color: .yellow, radius: 5))
+            }
+
+            GeometryReader { geo in
+                let totalIncome = currentIncome + projectedIncome
+                let fillRatio = CGFloat(goal > 0 ? min(totalIncome / goal, 1.0) : 0)
+                let currentRatio = CGFloat(goal > 0 ? min(currentIncome / goal, 1.0) : 0)
+
+                ZStack(alignment: .bottom) {
+                    // Background Vessel
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(Color.black.opacity(0.3))
+                        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white.opacity(0.1), lineWidth: 1))
+
+                    // Current Income Liquid
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(LinearGradient(colors: [.cyan.opacity(0.6), .blue.opacity(0.3)], startPoint: .top, endPoint: .bottom))
+                        .frame(width: geo.size.width * currentRatio, height: geo.size.height)
+                        .clipped()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    // Projected Income Liquid
+                    if fillRatio > currentRatio {
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(LinearGradient(colors: [.yellow.opacity(0.8), .orange.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: geo.size.width * (fillRatio - currentRatio), height: geo.size.height)
+                            .offset(x: geo.size.width * currentRatio)
+                            .clipped()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .modifier(NeonGlowModifier(color: .yellow, radius: 4))
+                    }
+
+                    // Glass highlight
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(LinearGradient(colors: [.white.opacity(0.5), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
+                }
+            }
+            .frame(height: 30)
+        }
+        .liquidGlass()
     }
 }
