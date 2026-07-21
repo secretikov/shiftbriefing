@@ -117,7 +117,7 @@ class DataManager: ObservableObject {
         return Int(ceil(remainingGoalsAmount / avgIncome))
     }
 
-    // Генератор графика
+    // Генератор графика (Цикличный)
     func generateSchedule(startDate: Date, endDate: Date, workDays: Int, restDays: Int, shiftType: ShiftType, duration: Double, fixedAmount: Double, isFixed: Bool) {
         var currentDate = startDate
         var cycleCounter = 0
@@ -146,6 +146,36 @@ class DataManager: ObservableObject {
             }
 
             // Переходим к следующему дню
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+        }
+
+        shifts.sort { $0.date < $1.date }
+        saveData()
+    }
+
+    // Генератор графика (По дням недели)
+    // weekdays: массив чисел от 1 до 7 (где 1 - Воскресенье, 2 - Понедельник, ..., 7 - Суббота)
+    func generateScheduleByWeekdays(startDate: Date, endDate: Date, weekdays: Set<Int>, shiftType: ShiftType, duration: Double, fixedAmount: Double, isFixed: Bool) {
+        var currentDate = startDate
+        let calendar = Calendar.current
+
+        while currentDate <= endDate {
+            let weekday = calendar.component(.weekday, from: currentDate)
+
+            if weekdays.contains(weekday) {
+                let newShift = Shift(
+                    date: currentDate,
+                    shiftType: shiftType,
+                    isFixedIncome: isFixed,
+                    fixedAmount: fixedAmount,
+                    durationHours: duration,
+                    hourlyRate: defaultHourlyRate,
+                    isCompleted: false,
+                    actualIncome: 0,
+                    isArchived: false
+                )
+                shifts.append(newShift)
+            }
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
         }
 
