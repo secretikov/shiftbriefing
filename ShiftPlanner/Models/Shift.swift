@@ -34,6 +34,10 @@ struct Shift: Identifiable, Codable {
     // Статус
     var isArchived: Bool = false
 
+    // Live режим
+    var isLive: Bool = false
+    var startTime: Date? = nil
+
     var expectedIncome: Double {
         if isFixedIncome {
             return fixedAmount * shiftType.multiplier

@@ -62,7 +62,41 @@ class DataManager: ObservableObject {
 
     // Логика прогнозирования
     var projectedIncomeForPlannedShifts: Double {
-        shifts.filter { !$0.isCompleted && !$0.isArchived }.reduce(0) { $0 + $1.expectedIncome }
+        shifts.filter { !$0.isCompleted && !$0.isArchived && !$0.isLive }.reduce(0) { $0 + $1.expectedIncome }
+    }
+
+    var burnoutRisk: Double {
+        // Простой расчет риска выгорания на основе часов за последние 7 дней (макс 60 часов)
+        var calendar = Calendar.current
+        let now = Date()
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: now)!
+
+        let recentHours = shifts.filter { $0.date >= weekAgo && $0.date <= now && !$0.isArchived && !$0.isFixedIncome }.reduce(0) { $0 + $1.durationHours }
+        return min(max(recentHours / 60.0, 0), 1.0)
+    }
+
+    // Live режим
+    func startLiveShift() {
+        let liveShift = Shift(
+            date: Date(),
+            isLive: true,
+            startTime: Date(),
+            durationHours: 0,
+            hourlyRate: defaultHourlyRate
+        )
+        shifts.append(liveShift)
+        shifts.sort { $0.date < $1.date }
+        saveData()
+    }
+
+    func stopLiveShift(id: UUID, finalDuration: Double, actualIncome: Double) {
+        if let index = shifts.firstIndex(where: { $0.id == id }) {
+            shifts[index].isLive = false
+            shifts[index].durationHours = finalDuration
+            shifts[index].isCompleted = true
+            shifts[index].actualIncome = actualIncome
+            saveData()
+        }
     }
 
     var shiftsNeededForGoals: Int {
