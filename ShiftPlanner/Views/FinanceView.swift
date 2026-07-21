@@ -191,6 +191,7 @@ struct FinanceView: View {
 }
 
 struct FinancialBubbleView: View {
+    @EnvironmentObject var dataManager: DataManager
     var item: FinancialItem
     var toggleAction: (FinancialItem) -> Void
     var editAction: () -> Void
