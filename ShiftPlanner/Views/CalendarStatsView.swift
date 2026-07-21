@@ -24,7 +24,7 @@ struct CalendarStatsView: View {
                                     .foregroundColor(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .primary)
                             }
 
-                            ProgressView(value: min(dataManager.thisMonthIncome / max(dataManager.monthlyGoal, 1), 1))
+                            ProgressView(value: dataManager.monthlyGoalProgress)
                                 .tint(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .blue)
                         }
                         .liquidGlass()
