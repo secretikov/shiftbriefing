@@ -17,9 +17,8 @@ struct ContentView: View {
                         .ignoresSafeArea()
                         .hueRotation(.degrees(gradientRotation))
 
-                    RadialGradient(gradient: Gradient(colors: [Color(red: 0.4, green: 0.0, blue: 0.6).opacity(0.4), .clear]), center: .bottomTrailing, startRadius: 100, endRadius: 500)
+                    RadialGradient(gradient: Gradient(colors: [Color.cyan.opacity(0.4), Color.blue.opacity(0.1), .clear]), center: .topTrailing, startRadius: 0, endRadius: 600)
                         .ignoresSafeArea()
-                        .hueRotation(.degrees(-gradientRotation))
 
                     RadialGradient(gradient: Gradient(colors: [Color(red: 0.0, green: 0.8, blue: 0.4).opacity(0.2), .clear]), center: .center, startRadius: 50, endRadius: 400)
                         .ignoresSafeArea()

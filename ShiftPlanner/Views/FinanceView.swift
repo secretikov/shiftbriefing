@@ -38,7 +38,7 @@ struct FinanceView: View {
                                     )
 
                                 VStack {
-                                    Text("\(String(format: "%.0f", dataManager.remainingBalance)) ₽")
+                                    Text("\(String(format: "%.0f", dataManager.remainingBalance)) \(dataManager.currencySymbol)")
                                         .font(.system(size: 28, weight: .bold))
                                         .foregroundColor(dataManager.remainingBalance >= 0 ? .white : .red)
                                         .minimumScaleFactor(0.5)
@@ -95,7 +95,7 @@ struct FinanceView: View {
                 }
             }
             .navigationTitle("Умный Кошелек")
-            .toolbar {
+                        .toolbar {
                 Button(action: {
                     editingItemId = nil
                     itemName = ""
@@ -104,26 +104,22 @@ struct FinanceView: View {
                     itemPriority = 1
                     showingAddFinance = true
                 }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.cyan.opacity(0.2))
-                            .frame(width: 35, height: 35)
-                        Image(systemName: "plus")
-                            .font(.title3.bold())
-                            .foregroundColor(.cyan)
-                    }
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.cyan)
+                        .modifier(NeonGlowModifier(color: .cyan, radius: 5))
                 }
             }
             .sheet(isPresented: $showingAddFinance) {
                 NavigationView {
                     ZStack {
-                        Color(red: 0.05, green: 0.05, blue: 0.1).ignoresSafeArea()
+                        Color.clear.ignoresSafeArea()
                         ScrollView {
                             VStack(spacing: 20) {
                                 VStack(spacing: 15) {
                                     TextField("Название", text: $itemName)
                                         .glassTextField()
-                                    TextField("Сумма (₽)", text: $itemAmount)
+                                    TextField("Сумма (\(dataManager.currencySymbol))", text: $itemAmount)
                                         .keyboardType(.decimalPad)
                                         .glassTextField()
                                 }
@@ -163,7 +159,7 @@ struct FinanceView: View {
                                         .frame(maxWidth: .infinity)
                                         .padding()
                                         .background(Color.cyan)
-                                        .cornerRadius(15)
+                                        .cornerRadius(20)
                                         .modifier(NeonGlowModifier(color: .cyan, radius: 5))
                                 }
                                 .padding(.horizontal)
@@ -244,14 +240,14 @@ struct FinancialBubbleView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
 
-            Text("\(String(format: "%.0f", item.amount)) ₽")
+            Text("\(String(format: "%.0f", item.amount)) \(dataManager.currencySymbol)")
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
         .padding(10)
         .background(Color.white.opacity(0.03))
-        .cornerRadius(15)
-        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        .cornerRadius(20)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.1), lineWidth: 1))
         .contextMenu {
             Button(action: editAction) {
                 Label("Редактировать", systemImage: "pencil")

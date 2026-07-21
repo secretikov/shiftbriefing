@@ -5,6 +5,11 @@ class DataManager: ObservableObject {
     @Published var shifts: [Shift] = []
     @Published var financialItems: [FinancialItem] = []
 
+    // Новые настройки
+    @Published var currencySymbol: String = "₽"
+    @Published var notificationsEnabled: Bool = false
+    @Published var workScheduleType: String = "Свободный"
+
     @Published var defaultHourlyRate: Double = 1000.0 {
         didSet { UserDefaults.standard.set(defaultHourlyRate, forKey: "saved_hourlyRate") }
     }
@@ -68,6 +73,10 @@ class DataManager: ObservableObject {
         self.monthlyGoal = UserDefaults.standard.double(forKey: "saved_monthlyGoal") == 0 ? 100000.0 : UserDefaults.standard.double(forKey: "saved_monthlyGoal")
         self.userName = UserDefaults.standard.string(forKey: "saved_userName") ?? ""
         loadData()
+
+        self.currencySymbol = UserDefaults.standard.string(forKey: "currencySymbol") ?? "₽"
+        self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+        self.workScheduleType = UserDefaults.standard.string(forKey: "workScheduleType") ?? "Свободный"
     }
 
     // Геймификация
