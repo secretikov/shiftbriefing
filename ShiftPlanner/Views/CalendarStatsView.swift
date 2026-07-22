@@ -185,6 +185,7 @@ struct StatBox: View {
 
 
 struct FluidVesselView: View {
+    @EnvironmentObject var dataManager: DataManager
     var projectedIncome: Double
     var currentIncome: Double
     var goal: Double

@@ -219,7 +219,7 @@ class DataManager: ObservableObject {
     }
 
     // Сохранение и загрузка
-    private func saveData() {
+    func saveData() {
         if let encodedShifts = try? JSONEncoder().encode(shifts) {
             UserDefaults.standard.set(encodedShifts, forKey: "saved_shifts")
         }
