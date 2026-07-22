@@ -107,11 +107,51 @@ struct ShiftsView: View {
                 ScrollView {
                     VStack(spacing: 20) {
 
+                        // Custom Header
+                        HStack {
+                            Text("Смены")
+                                .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
+                                .foregroundColor(.white)
+
+                            Spacer()
+
+                            HStack(spacing: 20) {
+                                Button(action: {
+                                    editingShiftId = nil
+                                    newShiftDate = Date()
+                                    newShiftType = .standard
+                                    isFixedIncome = false
+                                    fixedAmount = ""
+                                    newShiftDuration = 8.0
+                                    showingAddShift = true
+                                }) {
+                                    Text("+ смена")
+                                        .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
+                                        .foregroundColor(.white)
+                                }
+
+                                if !dataManager.shifts.contains(where: { $0.isLive }) {
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                                            dataManager.startLiveShift()
+                                        }
+                                    }) {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(.green)
+                                            .modifier(NeonGlowModifier(color: .green, radius: 5))
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
                         // Приветствие и Ранг
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(greetingMessage())
-                                    .font(.title2.bold())
+                                    .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
                                     .foregroundColor(.white)
                                 Text("Ранг: \(dataManager.userRank)")
                                     .font(.subheadline)
@@ -142,33 +182,44 @@ struct ShiftsView: View {
                                 .padding(.horizontal)
                         }
 
+                        // Sorting Header
+                        HStack {
+                            Text("Сортировать")
+                                .font(.custom("Inter-Regular", size: 24, relativeTo: .title2))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("Сначала ближайшие")
+                                .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                .foregroundColor(Color(red: 0, green: 0.533, blue: 1))
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
                         // List of shifts
                         ForEach(Array(dataManager.shifts.filter { !$0.isArchived && !$0.isLive }.reversed())) { shift in
                             HStack {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(shift.date, style: .date)
-                                        .font(.headline)
+                                        .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                        .foregroundColor(.white)
 
                                     HStack {
-                                        Text(shift.shiftType.rawValue)
-                                            .font(.caption)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.indigo.opacity(0.2))
-                                            .cornerRadius(5)
-
                                         if !shift.isFixedIncome {
-                                            Text("\(String(format: "%.1f", shift.durationHours)) ч")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
+                                            Text("Длительность \(String(format: "%.0f", shift.durationHours)) часов.")
+                                                .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                                .foregroundColor(.white)
+                                        } else {
+                                            Text(shift.shiftType.rawValue)
+                                                .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                                .foregroundColor(.white)
                                         }
                                     }
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing) {
-                                    Text("+\(String(format: "%.0f", shift.finalIncome)) \(dataManager.currencySymbol)")
-                                        .font(.title3.bold())
-                                        .foregroundColor(shift.isCompleted ? .green : .primary)
+                                    Text("\(String(format: "%.0f", shift.finalIncome)) \(dataManager.currencySymbol)")
+                                        .font(.custom("Inter-Regular", size: 24, relativeTo: .title2))
+                                        .foregroundColor(.white)
 
                                     if !shift.isCompleted {
                                         Button(action: {
@@ -220,41 +271,7 @@ struct ShiftsView: View {
                     .padding(.vertical)
                 }
             }
-            .navigationTitle("Смены")
-
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 20) {
-                        Button(action: {
-                            editingShiftId = nil
-                            newShiftDate = Date()
-                            newShiftType = .standard
-                            isFixedIncome = false
-                            fixedAmount = ""
-                            newShiftDuration = 8.0
-                            showingAddShift = true
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.cyan)
-                                .modifier(NeonGlowModifier(color: .cyan, radius: 5))
-                        }
-
-                        if !dataManager.shifts.contains(where: { $0.isLive }) {
-                            Button(action: {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
-                                    dataManager.startLiveShift()
-                                }
-                            }) {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.green)
-                                    .modifier(NeonGlowModifier(color: .green, radius: 5))
-                            }
-                        }
-                    }
-                }
-            }
+            .navigationBarHidden(true)
             // Sheet for Adding Shift
             .sheet(isPresented: $showingAddShift) {
                 NavigationView {

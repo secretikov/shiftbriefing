@@ -38,7 +38,7 @@ struct ContentView: View {
 
                     CalendarStatsView()
                         .tabItem {
-                            Label("Статистика", systemImage: "chart.bar.xaxis")
+                            Label("Календарь", systemImage: "calendar")
                         }
 
                     FinanceView()
