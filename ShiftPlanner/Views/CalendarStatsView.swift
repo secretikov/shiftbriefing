@@ -188,6 +188,7 @@ struct FluidVesselView: View {
     var projectedIncome: Double
     var currentIncome: Double
     var goal: Double
+    @EnvironmentObject var dataManager: DataManager
 
     var body: some View {
         VStack(spacing: 15) {

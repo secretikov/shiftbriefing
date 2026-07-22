@@ -197,6 +197,7 @@ struct FinancialBubbleView: View {
     var deleteAction: () -> Void
 
     @State private var isAnimating = false
+    @EnvironmentObject var dataManager: DataManager
 
     var body: some View {
         VStack(spacing: 8) {
