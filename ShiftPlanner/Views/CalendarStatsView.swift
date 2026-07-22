@@ -18,20 +18,49 @@ struct CalendarStatsView: View {
                             Text("Статистика")
                                 .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
                                 .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(20)
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.3), lineWidth: 1))
+
                             Spacer()
+
                             Button(action: { showingGenerator = true }) {
                                 Text("+ дни работы")
                                     .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
                                     .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white.opacity(0.1))
+                                    .cornerRadius(20)
+                                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.3), lineWidth: 1))
                             }
                         }
                         .padding(.horizontal)
                         .padding(.top, 10)
 
+                        // Месячная цель
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Цель на месяц")
+                                .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                .foregroundColor(.white)
+                            Text("\(String(format: "%.0f", dataManager.thisMonthIncome)) р / \(String(format: "%.0f", dataManager.monthlyGoal)) р")
+                                .font(.custom("Inter-Regular", size: 24, relativeTo: .title2))
+                                .foregroundColor(.white)
+                        }
+                        .padding(24)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(15)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.cyan.opacity(0.5), lineWidth: 1))
+                        .padding(.horizontal)
+
                         // Статистика (плитки)
                         HStack(spacing: 15) {
-                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) \(dataManager.currencySymbol)")
-                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) \(dataManager.currencySymbol)")
+                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) р")
+                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) р")
                         }
                         .padding(.horizontal)
 
