@@ -13,77 +13,36 @@ struct CalendarStatsView: View {
                 ScrollView {
                     VStack(spacing: 20) {
 
-                        // Месячная цель (Прогресс-бар)
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text("Цель на месяц")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(String(format: "%.0f", dataManager.thisMonthIncome)) / \(String(format: "%.0f", dataManager.monthlyGoal)) \(dataManager.currencySymbol)")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .primary)
+                        // Custom Header
+                        HStack {
+                            Text("Статистика")
+                                .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Button(action: { showingGenerator = true }) {
+                                Text("+ дни работы")
+                                    .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                                    .foregroundColor(.white)
                             }
-
-                            ProgressView(value: dataManager.monthlyGoalProgress)
-                                .tint(dataManager.thisMonthIncome >= dataManager.monthlyGoal ? .green : .blue)
                         }
-                        .liquidGlass()
                         .padding(.horizontal)
+                        .padding(.top, 10)
 
                         // Статистика (плитки)
                         HStack(spacing: 15) {
-                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) \(dataManager.currencySymbol)", icon: "chart.bar.fill", color: .purple)
-                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) \(dataManager.currencySymbol)", icon: "sum", color: .orange)
+                            StatBox(title: "За неделю", value: "\(String(format: "%.0f", dataManager.thisWeekIncome)) \(dataManager.currencySymbol)")
+                            StatBox(title: "Средний доход", value: "\(String(format: "%.0f", dataManager.averageIncomePerShift)) \(dataManager.currencySymbol)")
                         }
                         .padding(.horizontal)
 
-                        // Индикатор выгорания
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Image(systemName: "flame.fill")
-                                    .foregroundColor(burnoutColor())
-                                Text("Риск выгорания")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(String(format: "%.0f", dataManager.burnoutRisk * 100))%")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(burnoutColor())
-                            }
-
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(height: 10)
-                                        .cornerRadius(5)
-
-                                    Rectangle()
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [.green, .yellow, .red]),
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .frame(width: geometry.size.width * CGFloat(dataManager.burnoutRisk), height: 10)
-                                        .cornerRadius(5)
-                                        .modifier(NeonGlowModifier(color: burnoutColor(), radius: 3))
-                                }
-                            }
-                            .frame(height: 10)
+                        // Календарь Header
+                        HStack {
+                            Text(currentMonthYear())
+                                .font(.custom("Inter-Regular", size: 24, relativeTo: .title2))
+                                .foregroundColor(.white)
+                            Spacer()
                         }
-                        .liquidGlass()
                         .padding(.horizontal)
-
-                        // Прогноз дохода
-                        if dataManager.projectedIncomeForPlannedShifts > 0 {
-                            FluidVesselView(
-                                projectedIncome: dataManager.projectedIncomeForPlannedShifts,
-                                currentIncome: dataManager.thisMonthIncome,
-                                goal: dataManager.monthlyGoal
-                            )
-                            .padding(.horizontal)
-                        }
 
                         // Календарь
                         CustomCalendarView(selectedDate: $selectedDate)
@@ -123,55 +82,39 @@ struct CalendarStatsView: View {
                     .padding(.vertical)
                 }
             }
-            .navigationTitle("Статистика")
-            .toolbar {
-                Button(action: { showingGenerator = true }) {
-                    Image(systemName: "calendar.badge.plus")
-                        .font(.title2)
-                }
-            }
+            .navigationBarHidden(true)
             .sheet(isPresented: $showingGenerator) {
                 ScheduleGeneratorView()
             }
         }
     }
 
-    private func burnoutColor() -> Color {
-        let risk = dataManager.burnoutRisk
-        if risk > 0.7 {
-            return .red
-        } else if risk > 0.4 {
-            return .yellow
-        } else {
-            return .green
-        }
+    private func currentMonthYear() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: Date()).capitalized
     }
 }
 
 struct StatBox: View {
     var title: String
     var value: String
-    var icon: String
-    var color: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                Spacer()
-            }
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.custom("Inter-Regular", size: 16, relativeTo: .body))
+                    .foregroundColor(.white)
                 Text(value)
-                    .font(.headline.bold())
+                    .font(.custom("Inter-Regular", size: 24, relativeTo: .title2))
+                    .foregroundColor(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
             }
         }
-        .padding()
+        .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.ultraThinMaterial)
         .cornerRadius(15)
