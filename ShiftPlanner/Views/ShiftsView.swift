@@ -112,6 +112,11 @@ struct ShiftsView: View {
                             Text("Смены")
                                 .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
                                 .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(20)
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.3), lineWidth: 1))
 
                             Spacer()
 
@@ -128,6 +133,11 @@ struct ShiftsView: View {
                                     Text("+ смена")
                                         .font(.custom("Inter-Regular", size: 20, relativeTo: .title3))
                                         .foregroundColor(.white)
+                                        .padding(.horizontal, 24)
+                                        .padding(.vertical, 12)
+                                        .background(Color.white.opacity(0.1))
+                                        .cornerRadius(20)
+                                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.3), lineWidth: 1))
                                 }
 
                                 if !dataManager.shifts.contains(where: { $0.isLive }) {
